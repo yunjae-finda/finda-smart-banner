@@ -421,10 +421,16 @@
   <div class="section">
     <div class="section-header">
       <div class="section-title">
-        <span class="live-dot"></span>
-        지금 롤링 중인 배너
+        <span class="live-dot" id="liveDot"></span>
+        <span id="rollingTitle">지금 롤링 중인 배너</span>
       </div>
-      <span id="rollingCount" style="font-size:12px;color:var(--gray-400)"></span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="datetime-local" id="rollingDatePicker"
+          style="font-size:12px;padding:4px 8px;border:1px solid var(--gray-200);border-radius:8px;color:var(--gray-700);background:#fff;cursor:pointer;"
+          oninput="onDatePickerChange()">
+        <button onclick="resetDatePicker()" style="font-size:11px;padding:3px 8px;border:1px solid var(--gray-200);border-radius:8px;color:var(--gray-500);background:#fff;cursor:pointer;">현재로</button>
+        <span id="rollingCount" style="font-size:12px;color:var(--gray-400)"></span>
+      </div>
     </div>
     <div class="banner-grid" id="rollingGrid">
       <div class="loading-state"><div class="spinner"></div><span>불러오는 중…</span></div>
@@ -596,8 +602,13 @@ function parseDate(cell) {
   if (krd) { let y = +krd[1]; if (y < 100) y += 2000; return new Date(y, +krd[2]-1, +krd[3]); }
   return null;
 }
-function timeStatus(b) {
-  const now = new Date();
+let previewDate = null; // null = use current time
+
+function getRefTime() {
+  return previewDate || new Date();
+}
+function timeStatus(b, refTime) {
+  const now = refTime || getRefTime();
   if (!b.startDate && !b.endDate) return 'always';
   if (b.startDate && now < b.startDate) return 'upcoming';
   if (b.endDate   && now > b.endDate)   return 'expired';
@@ -606,6 +617,23 @@ function timeStatus(b) {
 function isRollingNow(b) {
   const ts = timeStatus(b);
   return b.status === 'ON' && ts !== 'expired' && ts !== 'upcoming';
+}
+function onDatePickerChange() {
+  const val = document.getElementById('rollingDatePicker').value;
+  previewDate = val ? new Date(val) : null;
+  const isCustom = !!previewDate;
+  document.getElementById('liveDot').style.display = isCustom ? 'none' : '';
+  document.getElementById('rollingTitle').textContent = isCustom
+    ? `롤링 중인 배너 (${previewDate.toLocaleString('ko-KR', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} 기준)`
+    : '지금 롤링 중인 배너';
+  renderRolling();
+}
+function resetDatePicker() {
+  previewDate = null;
+  document.getElementById('rollingDatePicker').value = '';
+  document.getElementById('liveDot').style.display = '';
+  document.getElementById('rollingTitle').textContent = '지금 롤링 중인 배너';
+  renderRolling();
 }
 function fmtDate(d) {
   if (!d) return '—';
