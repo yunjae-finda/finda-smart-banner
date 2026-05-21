@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>핀다 스마트배너 현황판</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #5B45E8;
+      --primary-dark: #4535C8;
+      --primary-light: #EEE9FF;
+      --success: #10B981;
+      --success-light: #D1FAE5;
+      --danger: #EF4444;
+      --danger-light: #FEE2E2;
+      --warning: #F59E0B;
+      --warning-light: #FEF3C7;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-300: #D1D5DB;
+      --gray-400: #9CA3AF;
+      --gray-500: #6B7280;
+      --gray-600: #4B5563;
+      --gray-700: #374151;
+      --gray-800: #1F2937;
+      --gray-900: #111827;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: white;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0 28px;
+      height: 60px;
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--primary), #8B6FFF);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 800; font-size: 15px;
+    }
+    .header-title { font-size: 17px; font-weight: 700; color: var(--gray-900); }
+    .header-sub   { font-size: 12px; color: var(--gray-400); margin-top: 1px; }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .last-updated { font-size: 12px; color: var(--gray-400); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 14px; border-radius: 8px;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      border: none; text-decoration: none; transition: all 0.15s;
+    }
+    .btn-outline { background: white; color: var(--gray-700); border: 1px solid var(--gray-200); }
+    .btn-outline:hover { background: var(--gray-50); }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+
+    /* ── Main ── */
+    .main { max-width: 1320px; margin: 0 auto; padding: 28px 28px 60px; }
+
+    /* ── Stats ── */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 14px; margin-bottom: 28px;
+    }
+    .stat-card {
+      background: white; border: 1px solid var(--gray-200);
+      border-radius: 12px; padding: 18px 20px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .stat-label { font-size: 12px; color: var(--gray-500); font-weight: 500; }
+    .stat-value { font-size: 30px; font-weight: 800; color: var(--gray-900); margin-top: 6px; letter-spacing: -1px; }
+    .stat-value.green  { color: var(--success); }
+    .stat-value.purple { color: var(--primary); }
+    .stat-value.gray   { color: var(--gray-400); }
+
+    /* ── Section ── */
+    .section { margin-bottom: 32px; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .section-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--gray-900); }
+    .live-dot {
+      width: 8px; height: 8px; background: var(--success); border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+      50%       { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+    }
+
+    /* ── Banner Cards ── */
+    .banner-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .banner-card {
+      background: white; border: 1px solid var(--gray-200);
+      border-left: 3px solid var(--success); border-radius: 12px;
+      padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: box-shadow 0.2s, transform 0.15s;
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+    .banner-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-1px); }
+    .card-image-wrap { flex-shrink: 0; width: 40%; }
+    .card-image {
+      width: 100%; height: auto; max-height: 160px;
+      object-fit: contain; border-radius: 8px;
+      display: block;
+    }
+    .card-image-placeholder {
+      width: 100%; height: 80px; border-radius: 8px;
+      background: var(--gray-100);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: var(--gray-400);
+    }
+    .card-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .card-body .card-meta { flex: 1; }
+    .card-body .card-footer { margin-top: auto; padding-top: 8px; }
+    .table-thumb {
+      width: auto; height: 72px; max-width: 200px;
+      object-fit: contain; border-radius: 6px;
+      background: var(--gray-100); display: block;
+    }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+    .card-group { font-size: 11px; color: var(--gray-400); font-weight: 500; flex: 1; }
+    .badge-row { display: flex; gap: 4px; flex-shrink: 0; }
+    .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .type-A { background: #FEF3C7; color: #B45309; }
+    .type-B { background: #DBEAFE; color: #1D4ED8; }
+    .type-C { background: #F3E8FF; color: #6D28D9; }
+    .type-E { background: var(--gray-100); color: var(--gray-600); }
+    .status-on  { background: var(--success-light); color: #065F46; }
+    .status-off { background: var(--gray-100); color: var(--gray-500); }
+    .card-message { font-size: 14px; font-weight: 600; color: var(--gray-900); line-height: 1.45; margin-bottom: 10px; }
+    .card-meta { display: flex; flex-direction: column; gap: 5px; }
+    .meta-row { display: flex; align-items: flex-start; gap: 6px; font-size: 12px; color: var(--gray-500); }
+    .meta-icon { flex-shrink: 0; width: 14px; }
+    .card-footer { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .priority-pill { font-size: 11px; font-weight: 700; background: var(--primary-light); color: var(--primary); padding: 2px 9px; border-radius: 20px; }
+    .time-info { display: flex; align-items: center; gap: 5px; }
+    .time-chip { display: inline-flex; align-items: center; gap: 2px; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+    .chip-rolling  { background: #D1FAE5; color: #065F46; }
+    .chip-always   { background: #EEE9FF; color: #5B45E8; }
+    .chip-expired  { background: var(--danger-light); color: #991B1B; }
+    .chip-upcoming { background: var(--warning-light); color: #92400E; }
+    .date-range { font-size: 11px; color: var(--gray-400); }
+
+    /* ── Filter Panel ── */
+    .filter-panel {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--gray-100);
+      display: flex; flex-direction: column; gap: 14px;
+      background: var(--gray-50);
+    }
+    .filter-row { display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
+    .filter-group { display: flex; flex-direction: column; gap: 5px; }
+    .filter-label { font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.04em; }
+    .btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
+    .filter-btn {
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 500; cursor: pointer;
+      border: 1px solid var(--gray-200); background: white; color: var(--gray-600);
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .filter-btn:hover { background: var(--gray-100); }
+    .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    .filter-select {
+      height: 34px; padding: 0 30px 0 10px;
+      border: 1px solid var(--gray-200); border-radius: 8px;
+      font-size: 13px; color: var(--gray-700); background: white;
+      cursor: pointer; appearance: none; min-width: 130px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+    }
+    .filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(91,69,232,0.1); }
+
+    .filter-input {
+      height: 34px; padding: 0 10px;
+      border: 1px solid var(--gray-200); border-radius: 8px;
+      font-size: 13px; color: var(--gray-700); background: white;
+      min-width: 180px;
+    }
+    .filter-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(91,69,232,0.1); }
+    .filter-input::placeholder { color: var(--gray-400); }
+
+    .filter-actions { margin-left: auto; display: flex; align-items: flex-end; gap: 10px; }
+    .filter-count { font-size: 12px; color: var(--gray-500); font-weight: 500; white-space: nowrap; }
+    .btn-reset {
+      height: 34px; padding: 0 14px;
+      background: white; border: 1px solid var(--gray-200); border-radius: 8px;
+      font-size: 12px; color: var(--gray-500); cursor: pointer; white-space: nowrap;
+    }
+    .btn-reset:hover { background: var(--danger-light); color: #991B1B; border-color: #FECACA; }
+
+    /* ── Table ── */
+    .table-container {
+      background: white; border: 1px solid var(--gray-200);
+      border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden;
+    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      background: var(--gray-50); padding: 9px 14px;
+      text-align: left; font-size: 11px; font-weight: 600; color: var(--gray-500);
+      text-transform: uppercase; letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--gray-200); white-space: nowrap;
+    }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--gray-100); color: var(--gray-700); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #FAFAFF; }
+    .td-rank { font-size: 12px; font-weight: 600; color: var(--gray-400); text-align: center; }
+    .td-message { font-weight: 600; color: var(--gray-900); max-width: 240px; }
+    .td-group { font-size: 11px; color: var(--gray-400); margin-top: 2px; font-weight: 400; }
+    .td-priority { font-weight: 700; color: var(--primary); }
+    .td-target { font-size: 12px; color: var(--gray-500); max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .td-date { font-size: 12px; color: var(--gray-500); white-space: nowrap; }
+    .td-requester { font-size: 12px; color: var(--gray-500); white-space: nowrap; }
+    .url-link { color: var(--primary); text-decoration: none; font-size: 11px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+    .url-link:hover { text-decoration: underline; }
+
+    /* ── Loading / Empty ── */
+    .loading-state, .empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 60px 20px; color: var(--gray-400); font-size: 14px; gap: 12px;
+    }
+    .spinner { width: 30px; height: 30px; border: 3px solid var(--gray-200); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.75s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Guide Section ── */
+    .guide-section {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      flex-wrap: wrap;
+    }
+    .guide-intro {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      flex: 1;
+      min-width: 240px;
+    }
+    .guide-intro-icon {
+      font-size: 22px;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .guide-intro-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 4px;
+    }
+    .guide-intro-desc {
+      font-size: 12px;
+      color: var(--gray-500);
+      line-height: 1.6;
+    }
+    .guide-links {
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .guide-link-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      text-decoration: none;
+      background: var(--gray-50);
+      transition: all 0.15s;
+      min-width: 200px;
+    }
+    .guide-link-card:hover {
+      background: white;
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(91,69,232,0.1);
+    }
+    .guide-link-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .guide-link-icon--blue   { background: #DBEAFE; color: #1D4ED8; }
+    .guide-link-icon--purple { background: var(--primary-light); color: var(--primary); }
+    .guide-link-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+    .guide-link-sub {
+      font-size: 11px;
+      color: var(--gray-400);
+      margin-top: 2px;
+    }
+    .guide-link-arrow {
+      margin-left: auto;
+      color: var(--gray-300);
+      flex-shrink: 0;
+    }
+    .guide-link-card:hover .guide-link-arrow { color: var(--primary); }
+
+    .error-bar {
+      background: var(--danger-light); color: #991B1B; border: 1px solid #FECACA;
+      border-radius: 10px; padding: 14px 18px; margin-bottom: 24px; font-size: 13px; display: none;
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .header { padding: 0 16px; }
+      .main { padding: 16px 16px 40px; }
+      .header-right .last-updated { display: none; }
+      .filter-row { flex-direction: column; align-items: stretch; }
+      .filter-actions { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <img src="favicon.png" style="width:34px;height:34px;border-radius:8px;display:block;">
+    <div>
+      <div class="header-title">스마트배너 현황판</div>
+      <div class="header-sub">finda_marketing team</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="last-updated" id="lastUpdated">불러오는 중…</span>
+    <button class="btn btn-outline" onclick="loadData()">🔄 새로고침</button>
+    <a href="https://docs.google.com/spreadsheets/d/12xohClHIL56N5vRSKdu9cko9DjAKPcYLvY4i0Ok-bYw/edit" target="_blank" class="btn btn-primary">📊 스프레드시트</a>
+  </div>
+</header>
+
+<main class="main">
+
+  <div class="error-bar" id="errorBar"></div>
+
+  <!-- Guide Section -->
+  <div class="guide-section">
+    <div class="guide-intro">
+      <div class="guide-intro-icon">💡</div>
+      <div>
+        <div class="guide-intro-title">스마트배너란?</div>
+        <div class="guide-intro-desc">핀다 앱 홈 상단에 노출되는 개인화 배너입니다. 우선순위·타겟·일정에 따라 유저별로 다른 배너가 롤링됩니다.<br><span style="color:var(--primary);font-weight:600">*우선순위 높을수록 먼저 노출, 같은 숫자는 랜덤 노출</span><br><span style="color:var(--primary);font-weight:600">*노출 가능 조건: view 3회 미만, click(cta) 1회 미만, 닫기 X도 click으로 처리</span><br><span style="color:var(--primary);font-weight:600">*월요일마다 리셋</span></div>
+      </div>
+    </div>
+    <div class="guide-links">
+      <a href="https://findainc.atlassian.net/wiki/spaces/PO25/pages/5341971329/FRM" target="_blank" class="guide-link-card">
+        <div class="guide-link-icon guide-link-icon--blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div>
+          <div class="guide-link-title">스마트배너 가이드</div>
+          <div class="guide-link-sub">운영 방법 · 기획 규칙 · 요청 방법</div>
+        </div>
+        <svg class="guide-link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </a>
+      <a href="https://www.figma.com/design/NbdjZMF2ldyrosZ1LOyqPV/FRM-%EB%A9%94%EC%84%B8%EC%A7%80-%EC%8A%A4%ED%83%80%EC%9D%BC?t=g8nY2kWPPiyTr1WN-0" target="_blank" class="guide-link-card">
+        <div class="guide-link-icon guide-link-icon--purple">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div>
+          <div class="guide-link-title">배너 타입 가이드</div>
+          <div class="guide-link-sub">타입 A~E 디자인 · 스펙 · 예시</div>
+        </div>
+        <svg class="guide-link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">전체 배너</div>
+      <div class="stat-value" id="statTotal">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">지금 롤링 중</div>
+      <div class="stat-value purple" id="statRolling">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">활성 (ON)</div>
+      <div class="stat-value green" id="statOn">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">비활성 (OFF)</div>
+      <div class="stat-value gray" id="statOff">—</div>
+    </div>
+  </div>
+
+  <!-- Rolling Now -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="live-dot"></span>
+        지금 롤링 중인 배너
+      </div>
+      <span id="rollingCount" style="font-size:12px;color:var(--gray-400)"></span>
+    </div>
+    <div class="banner-grid" id="rollingGrid">
+      <div class="loading-state"><div class="spinner"></div><span>불러오는 중…</span></div>
+    </div>
+  </div>
+
+  <!-- Priority Table -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">전체 우선순위 목록</div>
+    </div>
+    <div class="table-container">
+
+      <!-- Filter Panel -->
+      <div class="filter-panel">
+
+        <!-- Row 1: 상태 + 타입 -->
+        <div class="filter-row">
+          <div class="filter-group">
+            <span class="filter-label">상태</span>
+            <div class="btn-group" id="statusFilterGroup">
+              <button class="filter-btn active" onclick="setFilter('status','all',this)">전체</button>
+              <button class="filter-btn" onclick="setFilter('status','rolling',this)">🟣 롤링 중</button>
+              <button class="filter-btn" onclick="setFilter('status','ON',this)">🟢 ON</button>
+              <button class="filter-btn" onclick="setFilter('status','OFF',this)">⚫ OFF</button>
+            </div>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">타입</span>
+            <div class="btn-group" id="typeFilterGroup">
+              <button class="filter-btn active" onclick="setFilter('type','all',this)">전체</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: 랜딩 + 요청자 + 대상 검색 + 초기화 -->
+        <div class="filter-row">
+          <div class="filter-group">
+            <span class="filter-label">랜딩</span>
+            <select class="filter-select" id="landingFilter" onchange="renderTable()">
+              <option value="all">전체</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">요청자</span>
+            <select class="filter-select" id="requesterFilter" onchange="renderTable()">
+              <option value="all">전체</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">대상 검색</span>
+            <input class="filter-input" id="targetSearch" type="text" placeholder="키워드로 대상 검색…" oninput="renderTable()">
+          </div>
+          <div class="filter-actions">
+            <span class="filter-count" id="filterCount"></span>
+            <button class="btn-reset" onclick="resetFilters()">✕ 초기화</button>
+          </div>
+        </div>
+
+      </div><!-- /filter-panel -->
+
+      <div class="table-wrap" id="tableWrapper">
+        <div class="loading-state"><div class="spinner"></div><span>불러오는 중…</span></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const SHEET_ID = '12xohClHIL56N5vRSKdu9cko9DjAKPcYLvY4i0Ok-bYw';
+let allBanners = [];
+let loadTimeout;
+
+// ── Filter state ──
+const filters = { status: 'all', type: 'all' };
+
+// ── Load ──
+function loadData() {
+  showLoading();
+  clearTimeout(loadTimeout);
+  const old = document.getElementById('gviz-script');
+  if (old) old.remove();
+  loadTimeout = setTimeout(() => showError('요청 시간이 초과되었습니다.'), 10000);
+  const s = document.createElement('script');
+  s.id = 'gviz-script';
+  s.onerror = () => showError('스크립트 로드 실패');
+  s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleGVizData&t=${Date.now()}`;
+  document.head.appendChild(s);
+}
+
+function handleGVizData(resp) {
+  clearTimeout(loadTimeout);
+  document.getElementById('errorBar').style.display = 'none';
+  if (resp.status === 'error') { showError(resp.errors?.[0]?.message || '알 수 없는 오류'); return; }
+
+  allBanners = (resp.table?.rows || [])
+    .map(row => {
+      const c = row.c || [];
+      // c[0]은 빈 컬럼 — 실제 데이터는 c[1]부터 시작
+      // c[4]에 배너 이미지 컬럼 추가로 이후 인덱스 +1
+      return {
+        groupName : val(c[1]),
+        message   : val(c[2]),
+        type      : val(c[3]),
+        imageUrl  : val(c[4]),
+        priority  : num(c[5]),
+        target    : val(c[6]),
+        landing   : val(c[7]),
+        url       : val(c[8]),
+        startDate : parseDate(c[9]),
+        endDate   : parseDate(c[10]),
+        requester : val(c[11]),
+        status    : val(c[12]),
+      };
+    })
+    .filter(b => b.message.trim() !== '');
+
+  // 병합된 셀로 비어있는 그룹명/날짜를 위 행에서 채워 내림 (fill-down)
+  let lastGroup = '';
+  let lastStart = null;
+  let lastEnd   = null;
+  allBanners.forEach(b => {
+    if (b.groupName) {
+      // 새 그룹 시작 — 기준값 갱신
+      lastGroup = b.groupName;
+      lastStart = b.startDate;
+      lastEnd   = b.endDate;
+    } else {
+      // 하위 행 — 그룹명과 날짜 채움 (날짜가 이미 있으면 유지)
+      b.groupName = lastGroup;
+      if (!b.startDate) b.startDate = lastStart;
+      if (!b.endDate)   b.endDate   = lastEnd;
+    }
+  });
+
+  // 우선순위 높은 순(내림차순)
+  allBanners.sort((a, b) => b.priority - a.priority);
+
+  const now = new Date();
+  document.getElementById('lastUpdated').textContent =
+    `업데이트: ${now.toLocaleString('ko-KR', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' })}`;
+
+  buildDynamicFilters();
+  renderStats();
+  renderRolling();
+  renderTable();
+}
+
+// ── Helpers ──
+function val(cell) { return cell?.v != null ? String(cell.v) : ''; }
+function num(cell) {
+  const v = cell?.v;
+  if (typeof v === 'number') return v;
+  if (typeof v === 'string') return parseInt(v.replace(/,/g,'')) || 0;
+  return 0;
+}
+function parseDate(cell) {
+  if (!cell?.v) return null;
+  const v = String(cell.v).trim();
+  // gviz Date(year, month0, day, h, m, s)
+  const gviz = v.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+)(?:,(\d+))?)?\)/);
+  if (gviz) return new Date(+gviz[1], +gviz[2], +gviz[3], +(gviz[4]||0), +(gviz[5]||0));
+  // Korean: "2026. 5. 19 11:00" or "26. 5. 13 14:00"
+  const kr = v.match(/^(\d{2,4})\.\s*(\d{1,2})\.\s*(\d{1,2})\s+(\d{1,2}):(\d{2})/);
+  if (kr) { let y = +kr[1]; if (y < 100) y += 2000; return new Date(y, +kr[2]-1, +kr[3], +kr[4], +kr[5]); }
+  // Korean date only
+  const krd = v.match(/^(\d{2,4})\.\s*(\d{1,2})\.\s*(\d{1,2})/);
+  if (krd) { let y = +krd[1]; if (y < 100) y += 2000; return new Date(y, +krd[2]-1, +krd[3]); }
+  return null;
+}
+function timeStatus(b) {
+  const now = new Date();
+  if (!b.startDate && !b.endDate) return 'always';
+  if (b.startDate && now < b.startDate) return 'upcoming';
+  if (b.endDate   && now > b.endDate)   return 'expired';
+  return 'rolling';
+}
+function isRollingNow(b) {
+  const ts = timeStatus(b);
+  return b.status === 'ON' && ts !== 'expired' && ts !== 'upcoming';
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  return d.toLocaleString('ko-KR', { year:'numeric', month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function normalizeImageUrl(url) {
+  if (!url) return '';
+  // 구글 드라이브 공유 링크 → 직접 이미지 URL 변환
+  // https://drive.google.com/file/d/FILE_ID/view?...
+  const m = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (m) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
+  return url;
+}
+
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Dynamic filter population ──
+function buildDynamicFilters() {
+  // 타입 버튼 (A~E 고정)
+  const types = ['A', 'B', 'C', 'D', 'E'];
+  const tg = document.getElementById('typeFilterGroup');
+  tg.innerHTML = `<button class="filter-btn ${filters.type==='all'?'active':''}" onclick="setFilter('type','all',this)">전체</button>`;
+  types.forEach(t => {
+    tg.innerHTML += `<button class="filter-btn ${filters.type===t?'active':''}" onclick="setFilter('type','${t}',this)">타입 ${t}</button>`;
+  });
+
+  // 랜딩 드롭다운
+  const landings = [...new Set(allBanners.map(b => b.landing).filter(Boolean))].sort();
+  const ls = document.getElementById('landingFilter');
+  const curLanding = ls.value;
+  ls.innerHTML = `<option value="all">전체</option>`;
+  landings.forEach(l => ls.innerHTML += `<option value="${esc(l)}" ${curLanding===l?'selected':''}>${esc(l)}</option>`);
+
+  // 요청자 드롭다운
+  const requesters = [...new Set(allBanners.map(b => b.requester).filter(r => r && r !== '?'))].sort();
+  const rs = document.getElementById('requesterFilter');
+  const curReq = rs.value;
+  rs.innerHTML = `<option value="all">전체</option>`;
+  requesters.forEach(r => rs.innerHTML += `<option value="${esc(r)}" ${curReq===r?'selected':''}>${esc(r)}</option>`);
+}
+
+// ── Filter logic ──
+function setFilter(key, value, btn) {
+  filters[key] = value;
+  // 같은 그룹 내 버튼만 active 토글
+  btn.closest('.btn-group').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function applyFilters(list) {
+  let out = [...list];
+
+  // 상태
+  if      (filters.status === 'rolling') out = out.filter(isRollingNow);
+  else if (filters.status === 'ON')      out = out.filter(b => b.status === 'ON');
+  else if (filters.status === 'OFF')     out = out.filter(b => b.status === 'OFF');
+
+  // 타입
+  if (filters.type !== 'all') out = out.filter(b => b.type === filters.type);
+
+  // 랜딩
+  const landing = document.getElementById('landingFilter')?.value;
+  if (landing && landing !== 'all') out = out.filter(b => b.landing === landing);
+
+  // 요청자
+  const requester = document.getElementById('requesterFilter')?.value;
+  if (requester && requester !== 'all') out = out.filter(b => b.requester === requester);
+
+  // 대상 검색
+  const keyword = (document.getElementById('targetSearch')?.value || '').trim().toLowerCase();
+  if (keyword) out = out.filter(b => b.target.toLowerCase().includes(keyword));
+
+  return out;
+}
+
+function resetFilters() {
+  filters.status = 'all';
+  filters.type   = 'all';
+  document.getElementById('targetSearch').value = '';
+  document.getElementById('landingFilter').value   = 'all';
+  document.getElementById('requesterFilter').value = 'all';
+  buildDynamicFilters();
+  // 상태 버튼 초기화
+  const sg = document.getElementById('statusFilterGroup');
+  sg.querySelectorAll('.filter-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  renderTable();
+}
+
+// ── Render ──
+function renderStats() {
+  document.getElementById('statTotal').textContent   = allBanners.length;
+  document.getElementById('statRolling').textContent = allBanners.filter(isRollingNow).length;
+  document.getElementById('statOn').textContent      = allBanners.filter(b => b.status === 'ON').length;
+  document.getElementById('statOff').textContent     = allBanners.filter(b => b.status === 'OFF').length;
+}
+
+function renderRolling() {
+  const rolling = allBanners.filter(isRollingNow);
+  document.getElementById('rollingCount').textContent = `${rolling.length}개`;
+  document.getElementById('rollingGrid').innerHTML =
+    rolling.length ? rolling.map(renderCard).join('') : `<div class="empty-state">현재 롤링 중인 배너가 없습니다.</div>`;
+}
+
+function renderCard(b) {
+  const ts = timeStatus(b);
+  const chipMap = { rolling:'chip-rolling ● 롤링 중', always:'chip-always ∞ 상시', expired:'chip-expired ✕ 종료', upcoming:'chip-upcoming ◷ 예정' };
+  const [chipCls, ...chipLabelParts] = (chipMap[ts] || 'chip-always ∞ 상시').split(' ');
+  const chipLabel = chipLabelParts.join(' ');
+  const hasDate = b.startDate || b.endDate;
+  const landingHtml = b.url?.startsWith('http')
+    ? `<a href="${esc(b.url)}" target="_blank" class="url-link" title="${esc(b.url)}">${esc(b.url)}</a>`
+    : `<span>${esc(b.url || b.landing || '—')}</span>`;
+
+  const imageHtml = b.imageUrl
+    ? `<img class="card-image" src="${esc(normalizeImageUrl(b.imageUrl))}" alt="배너 이미지" onerror="this.style.display='none'">`
+    : `<div class="card-image-placeholder">이미지 없음</div>`;
+
+  return `
+<div class="banner-card">
+  <div class="card-image-wrap">${imageHtml}</div>
+  <div class="card-body">
+  <div class="card-top">
+    <div class="card-group">${esc(b.groupName) || '—'}</div>
+    <div class="badge-row">
+      <span class="badge type-${esc(b.type)||'E'}">타입 ${esc(b.type)||'—'}</span>
+      <span class="priority-pill">우선순위 ${b.priority.toLocaleString()}</span>
+      <span class="badge status-on">ON</span>
+    </div>
+  </div>
+  <div class="card-message">${esc(b.message)}</div>
+  <div class="card-meta">
+    <div class="meta-row"><span class="meta-icon">🎯</span><span>${esc(b.target)||'—'}</span></div>
+    <div class="meta-row"><span class="meta-icon">📱</span><span>${esc(b.landing)||'—'}</span></div>
+    ${b.url ? `<div class="meta-row"><span class="meta-icon">🔗</span>${landingHtml}</div>` : ''}
+    ${b.requester ? `<div class="meta-row"><span class="meta-icon">👤</span><span>${esc(b.requester)}</span></div>` : ''}
+  </div>
+  ${hasDate ? `<div class="card-footer"><span class="date-range">${fmtDate(b.startDate)} ~ ${fmtDate(b.endDate)}</span></div>` : ''}
+  </div>
+</div>`;
+}
+
+function renderTable() {
+  const list = applyFilters(allBanners);
+  const isFiltered = list.length !== allBanners.length;
+  document.getElementById('filterCount').textContent =
+    isFiltered ? `${list.length} / ${allBanners.length}개` : `총 ${list.length}개`;
+
+  if (list.length === 0) {
+    document.getElementById('tableWrapper').innerHTML = `<div class="empty-state">해당하는 배너가 없습니다.</div>`;
+    return;
+  }
+
+  const chipMap = { rolling:'chip-rolling 롤링 중', always:'chip-always 상시', expired:'chip-expired 종료', upcoming:'chip-upcoming 예정' };
+
+  const rows = list.map((b, i) => {
+    const ts = timeStatus(b);
+    const [chipCls, chipLabel] = (chipMap[ts] || 'chip-always 상시').split(' ');
+    const statusBadge = b.status === 'ON'
+      ? `<span class="badge status-on">ON</span>`
+      : `<span class="badge status-off">OFF</span>`;
+    const urlCell = b.url?.startsWith('http')
+      ? `<a href="${esc(b.url)}" target="_blank" class="url-link" title="${esc(b.url)}">${esc(b.url)}</a>`
+      : `<span style="font-size:12px;color:var(--gray-500)">${esc(b.url || b.landing || '—')}</span>`;
+
+    const thumbHtml = b.imageUrl
+      ? `<img class="table-thumb" src="${esc(normalizeImageUrl(b.imageUrl))}" alt="" onerror="this.style.display='none'">`
+      : `<span style="font-size:11px;color:var(--gray-300)">없음</span>`;
+
+    return `<tr>
+      <td class="td-rank">${i + 1}</td>
+      <td>${thumbHtml}</td>
+      <td>
+        <div class="td-message">${esc(b.message)}</div>
+        <div class="td-group">${esc(b.groupName)}</div>
+      </td>
+      <td><span class="badge type-${esc(b.type)||'E'}">타입 ${esc(b.type)||'—'}</span></td>
+      <td class="td-priority">${b.priority.toLocaleString()}</td>
+      <td class="td-target" title="${esc(b.target)}">${esc(b.target)||'—'}</td>
+      <td>${urlCell}</td>
+      <td class="td-date">${fmtDate(b.startDate)}</td>
+      <td class="td-date">${fmtDate(b.endDate)}</td>
+      <td>${statusBadge}<span class="time-chip ${chipCls}" style="margin-left:4px">${chipLabel}</span></td>
+      <td class="td-requester">${esc(b.requester)||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('tableWrapper').innerHTML = `
+<table>
+  <thead>
+    <tr>
+      <th style="width:36px">#</th>
+      <th style="width:90px">이미지</th>
+      <th>메시지 / 그룹명</th>
+      <th>타입</th>
+      <th>우선순위</th>
+      <th>타겟</th>
+      <th>랜딩 URL</th>
+      <th>시작일</th>
+      <th>종료일</th>
+      <th>상태</th>
+      <th>요청자</th>
+    </tr>
+  </thead>
+  <tbody>${rows}</tbody>
+</table>`;
+}
+
+function showLoading() {
+  const html = `<div class="loading-state"><div class="spinner"></div><span>불러오는 중…</span></div>`;
+  document.getElementById('rollingGrid').innerHTML = html;
+  document.getElementById('tableWrapper').innerHTML = html;
+}
+function showError(msg) {
+  const bar = document.getElementById('errorBar');
+  bar.textContent = `⚠️ ${msg} — 스프레드시트가 공개 상태인지 확인하고 새로고침해 주세요.`;
+  bar.style.display = 'block';
+  document.getElementById('rollingGrid').innerHTML = `<div class="empty-state">데이터를 불러올 수 없습니다.</div>`;
+  document.getElementById('tableWrapper').innerHTML = `<div class="empty-state">데이터를 불러올 수 없습니다.</div>`;
+}
+
+loadData();
+</script>
+</body>
+</html>
