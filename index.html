@@ -531,20 +531,20 @@ function handleGVizData(resp) {
     .map(row => {
       const c = row.c || [];
       // c[0]은 빈 컬럼 — 실제 데이터는 c[1]부터 시작
-      // c[4]에 배너 이미지 컬럼 추가로 이후 인덱스 +1
       return {
         groupName : val(c[1]),
         message   : val(c[2]),
-        type      : val(c[3]),
-        imageUrl  : val(c[4]),
-        priority  : num(c[5]),
-        target    : val(c[6]),
-        landing   : val(c[7]),
-        url       : val(c[8]),
-        startDate : parseDate(c[9]),
-        endDate   : parseDate(c[10]),
-        requester : val(c[11]),
-        status    : val(c[12]),
+        id        : val(c[3]),
+        type      : val(c[4]),
+        imageUrl  : val(c[5]),
+        priority  : num(c[6]),
+        target    : val(c[7]),
+        landing   : val(c[8]),
+        url       : val(c[9]),
+        startDate : parseDate(c[10]),
+        endDate   : parseDate(c[11]),
+        requester : val(c[12]),
+        status    : val(c[13]),
       };
     })
     .filter(b => b.message.trim() !== '');
@@ -817,6 +817,7 @@ function renderTable() {
         <div class="td-message">${esc(b.message)}</div>
         <div class="td-group">${esc(b.groupName)}</div>
       </td>
+      <td style="font-size:12px;color:var(--gray-500);white-space:nowrap;">${esc(b.id)||'—'}</td>
       <td><span class="badge type-${esc(b.type)||'E'}">타입 ${esc(b.type)||'—'}</span></td>
       <td class="td-priority">${b.priority.toLocaleString()}</td>
       <td class="td-target" title="${esc(b.target)}">${esc(b.target)||'—'}</td>
@@ -835,6 +836,7 @@ function renderTable() {
       <th style="width:36px">#</th>
       <th style="width:90px">이미지</th>
       <th>메시지 / 그룹명</th>
+      <th>ID</th>
       <th>타입</th>
       <th>우선순위</th>
       <th>타겟</th>
