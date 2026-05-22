@@ -551,21 +551,31 @@ function handleGVizData(resp) {
     })
     .filter(b => b.message.trim() !== '');
 
-  // 병합된 셀로 비어있는 그룹명/날짜를 위 행에서 채워 내림 (fill-down)
-  let lastGroup = '';
-  let lastStart = null;
-  let lastEnd   = null;
+  // 병합된 셀로 비어있는 필드를 위 행에서 채워 내림 (fill-down)
+  let lastGroup    = '';
+  let lastStart    = null;
+  let lastEnd      = null;
+  let lastStatus   = '';
+  let lastTarget   = '';
+  let lastLanding  = '';
+  let lastUrl      = '';
   allBanners.forEach(b => {
     if (b.groupName) {
-      // 새 그룹 시작 — 기준값 갱신
-      lastGroup = b.groupName;
-      lastStart = b.startDate;
-      lastEnd   = b.endDate;
+      lastGroup   = b.groupName;
+      lastStart   = b.startDate;
+      lastEnd     = b.endDate;
+      lastStatus  = b.status;
+      lastTarget  = b.target;
+      lastLanding = b.landing;
+      lastUrl     = b.url;
     } else {
-      // 하위 행 — 그룹명과 날짜 채움 (날짜가 이미 있으면 유지)
       b.groupName = lastGroup;
       if (!b.startDate) b.startDate = lastStart;
       if (!b.endDate)   b.endDate   = lastEnd;
+      if (!b.status)    b.status    = lastStatus;
+      if (!b.target)    b.target    = lastTarget;
+      if (!b.landing)   b.landing   = lastLanding;
+      if (!b.url)       b.url       = lastUrl;
     }
   });
 
@@ -618,7 +628,11 @@ function timeStatus(b, refTime) {
 }
 function isRollingNow(b) {
   const ts = timeStatus(b);
-  return b.status === 'ON' && ts !== 'expired' && ts !== 'upcoming';
+  if (ts === 'expired' || ts === 'upcoming') return false;
+  // 날짜 선택 시: 해당 시점에 날짜 범위 안이면 status 무관하게 노출
+  if (previewDate) return true;
+  // 현재 시간 기준: status ON인 것만
+  return b.status === 'ON';
 }
 function onDatePickerChange() {
   const val = document.getElementById('rollingDatePicker').value;
